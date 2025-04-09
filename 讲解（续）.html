@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生态智灵</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-image: url("讲解（续）.png");
+            background-repeat: no-repeat;
+            background-position: top center;
+            background-size: contain;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 导航按钮容器 */
+        .nav-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* 基础按钮样式 */
+        .nav-btn {
+            position: absolute;
+            /*background-color: rgba(255,0,0,0.3); /* 调试用红色背景 */
+            /*border: 1px solid red; /* 调试用边框 */
+            cursor: pointer;
+            pointer-events: auto;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 返回首页按钮 */
+        .back-home-btn {
+            width: 250px;
+            height: 250px;
+            top: 100px;
+            left: 100px;
+        }
+
+        /* 输入按钮 */
+        .shuru-btn {
+            width: 1500px;
+            height: 400px;
+            /*background-color: rgba(255,0,0,0.3);  调试用红色背景 */
+            /*border: 1px solid red;  调试用边框 */
+        }
+
+        /* 视频弹窗样式 */
+        .video-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0);
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        
+        .video-content {
+            width: 423px;
+            height: 800px;
+            top: 13px; /* 新增：向下移动50像素 */
+            position: relative;
+            border-radius: 1px;
+            overflow: hidden;
+            background: rgba(0,0,0,0);
+        }
+        
+        .video-content video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 10px;
+            color: rgb(11, 9, 9);
+            font-size: 35px;
+            cursor: pointer;
+            z-index: 3001;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航按钮 -->
+    <div class="nav-container">
+        <div class="nav-btn back-home-btn" onclick="navigate('home')"></div>
+        <div class="nav-btn shuru-btn" onclick="showVideoPopup()"></div> <!-- 修改这里 -->
+    </div>
+
+    <!-- 视频弹窗 -->
+    <div class="video-popup" id="videoPopup">
+        <div class="video-content">
+            <span class="close-btn" onclick="closeVideoPopup()">×</span>
+            <video controls autoplay id="mainVideo">
+                <source src="讲解.mp4" type="video/mp4">
+                您的浏览器不支持视频播放。
+            </video>
+        </div>
+    </div>
+
+    <script>
+        // 统一的导航功能
+        function navigate(page) {
+            const pages = {
+                'home': '讲解.html',
+                'shuru': '问答.mp4'
+            };
+            if (pages[page]) {
+                if(page === 'shuru') {
+                    showVideoPopup();
+                } else {
+                    window.location.href = pages[page];
+                }
+            }
+        }
+
+        // 显示视频弹窗
+        function showVideoPopup() {
+            const popup = document.getElementById('videoPopup');
+            const video = document.getElementById('mainVideo');
+            
+            popup.style.display = 'flex';
+            video.play().catch(e => console.log("自动播放被阻止:", e));
+        }
+        
+        // 关闭视频弹窗
+        function closeVideoPopup() {
+            const popup = document.getElementById('videoPopup');
+            const video = document.getElementById('mainVideo');
+            
+            video.pause();
+            video.currentTime = 0;
+            popup.style.display = 'none';
+        }
+
+        // 动态调整按钮位置和大小
+        function adjustNavigation() {
+            const img = new Image();
+            img.src = "对话.png"; // 使用实际背景图
+            
+            img.onload = function() {
+                const imgWidth = img.width;
+                const imgHeight = img.height;
+                const buttons = document.querySelectorAll('.nav-btn');
+                
+                // 获取当前图片显示尺寸
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const imgRatio = imgWidth / imgHeight;
+                const windowRatio = windowWidth / windowHeight;
+                
+                let displayWidth, displayHeight, offsetX;
+                
+                if (windowRatio > imgRatio) {
+                    // 窗口更宽，图片高度撑满
+                    displayHeight = windowHeight;
+                    displayWidth = displayHeight * imgRatio;
+                    offsetX = (windowWidth - displayWidth) / 2;
+                } else {
+                    // 窗口更高，图片宽度撑满
+                    displayWidth = windowWidth;
+                    displayHeight = displayWidth / imgRatio;
+                    offsetX = 0;
+                }
+                
+                // 计算缩放比例
+                const scale = displayWidth / imgWidth;
+                
+                // 按钮位置配置
+                const buttonPositions = [
+                    { class: 'back-home-btn', x: 130, y: 350 }, // 返回按钮
+                    { class: 'shuru-btn', x: imgWidth*0.9, y: imgHeight*0.555 } // 发起问答
+                ];
+                
+                // 调整每个按钮
+                buttonPositions.forEach(pos => {
+                    const btn = document.querySelector(`.${pos.class}`);
+                    if (btn) {
+                        btn.style.left = `${offsetX + pos.x * scale}px`;
+                        btn.style.top = `${pos.y * scale}px`;
+                        
+                        // 调整按钮大小
+                        if (pos.class === 'back-home-btn') {
+                            btn.style.width = `${250 * scale}px`;
+                            btn.style.height = `${250 * scale}px`;
+                        } else if(pos.class === 'shuru-btn') {
+                            btn.style.width = `${400 * scale}px`;
+                            btn.style.height = `${250 * scale}px`;
+                        } else {
+                            btn.style.width = `${470 * scale}px`;
+                            btn.style.height = `${160 * scale}px`;
+                        }
+                    }
+                });
+            };
+        }
+
+        // 防抖处理
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(adjustNavigation, 100);
+        });
+
+        window.addEventListener('load', adjustNavigation);
+    </script>
+</body>
+</html>

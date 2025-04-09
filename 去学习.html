@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生态智灵</title>
+    <style>
+        /* 基础样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-image: url("去学习.png");
+            background-repeat: no-repeat;
+            background-position: top center;
+            background-size: contain;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 导航按钮容器 */
+        .nav-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* 基础按钮样式 */
+        .nav-btn {
+            position: absolute;
+            cursor: pointer;
+            pointer-events: auto;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 返回首页按钮 */
+        .back-home-btn {
+            width: 250px;
+            height: 250px;
+        }
+
+        /* 点击学习按钮 */
+        .study-btn {
+            width: 600px;
+            height: 200px;
+            /* 调试样式（正式使用时可移除） 
+            background-color: rgba(255,0,0,0.3); 
+            border: 1px solid red; */
+        }
+    </style>
+</head>
+<body>
+    <!-- 按钮容器 -->
+    <div class="nav-container">
+        <div class="nav-btn back-home-btn" onclick="navigate('home')"></div>
+        <div class="nav-btn study-btn" onclick="navigate('study')"></div>
+    </div>
+
+    <script>
+        // 导航功能（已添加视频处理）
+        function navigate(page) {
+    const pages = {
+        'home': 'index.html',
+        'knowledge': '问答.html',
+        'explanation': '讲解.html',
+        'communication': '对话.html',
+        'study': {
+            url: '点击学习.mp4',
+            isVideo: true
+        }
+    };
+    
+    if (pages[page]) {
+        if (pages[page].isVideo) {
+            // 创建视频播放层
+            const player = document.createElement('div');
+            player.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                z-index: 2000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            `;
+            
+            player.innerHTML = `
+                <video id="study-video" controls autoplay style="max-width: 90%; max-height: 80%">
+                    <source src="${pages[page].url}" type="video/mp4">
+                </video>
+                <button id="video-close-btn" style="
+                    margin-top: 20px;
+                    padding: 12px 30px;
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    display: none;">返回上层</button>
+            `;
+            
+            document.body.appendChild(player);
+            
+            // 获取视频元素和按钮
+            const video = document.getElementById('study-video');
+            const closeBtn = document.getElementById('video-close-btn');
+            
+            // 视频结束事件监听
+            video.addEventListener('ended', function() {
+                closeBtn.style.display = 'block'; // 显示返回按钮
+            });
+            
+            // 返回按钮点击事件
+            closeBtn.addEventListener('click', function() {
+                player.remove(); // 移除视频播放层
+            });
+            
+            // 也可以添加点击视频区域返回的功能
+            player.addEventListener('click', function(e) {
+                if (e.target === player) {
+                    player.remove();
+                }
+            });
+        } else {
+            window.location.href = pages[page];
+        }
+    }
+}
+
+        // 动态调整按钮（优化版）
+        function adjustNavigation() {
+            const img = new Image();
+            img.src = "去学习.png"; // 使用当前页面背景图
+            
+            img.onload = function() {
+                const imgWidth = img.width;
+                const imgHeight = img.height;
+                const buttons = {
+                    'back-home-btn': { x: 130, y: 350, width: 250, height: 250 },
+                    'study-btn': { x: imgWidth * 0.70, y: imgHeight * 0.94, width: 1200, height: 200 }
+                };
+                
+                // 视口计算
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const imgRatio = imgWidth / imgHeight;
+                const windowRatio = windowWidth / windowHeight;
+                
+                let displayWidth, displayHeight, offsetX;
+                
+                if (windowRatio > imgRatio) {
+                    displayHeight = windowHeight;
+                    displayWidth = displayHeight * imgRatio;
+                    offsetX = (windowWidth - displayWidth) / 2;
+                } else {
+                    displayWidth = windowWidth;
+                    displayHeight = displayWidth / imgRatio;
+                    offsetX = 0;
+                }
+                
+                const scale = displayWidth / imgWidth;
+                
+                // 应用调整
+                Object.entries(buttons).forEach(([cls, config]) => {
+                    const btn = document.querySelector(`.${cls}`);
+                    if (btn) {
+                        btn.style.left = `${offsetX + config.x * scale}px`;
+                        btn.style.top = `${config.y * scale}px`;
+                        btn.style.width = `${config.width * scale}px`;
+                        btn.style.height = `${config.height * scale}px`;
+                    }
+                });
+            };
+        }
+
+        // 优化防抖处理
+        const resizeController = {
+            timer: null,
+            handleResize() {
+                clearTimeout(this.timer);
+                this.timer = setTimeout(adjustNavigation, 100);
+            }
+        };
+
+        // 事件监听
+        window.addEventListener('load', adjustNavigation);
+        window.addEventListener('resize', () => resizeController.handleResize());
+    </script>
+</body>
+</html>
